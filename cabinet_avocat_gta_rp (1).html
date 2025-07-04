@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de Clients - Cabinet d'Avocat GTA RP</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .search-box {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 250px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 0 30px 30px 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        th {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: white;
+            padding: 15px 12px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f4;
+            vertical-align: middle;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .status-actif { background: #d4edda; color: #155724; }
+        .status-cloture { background: #f8d7da; color: #721c24; }
+        .status-attente { background: #fff3cd; color: #856404; }
+        .status-suspendu { background: #d1ecf1; color: #0c5460; }
+        
+        .domaine {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .domaine-penal { background: #ffe6e6; color: #c41e3a; }
+        .domaine-civil { background: #e6f3ff; color: #0066cc; }
+        .domaine-commercial { background: #e6ffe6; color: #009900; }
+        .domaine-famille { background: #fff0e6; color: #ff6600; }
+        .domaine-immobilier { background: #f0e6ff; color: #6600cc; }
+        .domaine-autre { background: #f0f0f0; color: #666666; }
+        
+        .edit-btn, .delete-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background: #138496;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 30px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+            color: #2c3e50;
+        }
+        
+        .summary-card p {
+            margin: 0;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .table-container {
+                margin: 0 15px 15px 15px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ Cabinet d'Avocat GTA RP</h1>
+            <p>Gestion des Clients et Dossiers Juridiques</p>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card">
+                <h3 id="totalClients">0</h3>
+                <p>Clients Total</p>
+            </div>
+            <div class="summary-card">
+                <h3 id="dossiersActifs">0</h3>
+                <p>Dossiers Actifs</p>
+            </div>
+            <div class="summary-card">
+                <h3 id="chiffreAffaires">0 €</h3>
+                <p>Chiffre d'Affaires</p>
+            </div>
+            <div class="summary-card">
+                <h3 id="honorairesEnAttente">0 €</h3>
+                <p>Honoraires en Attente</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openModal()">➕ Nouveau Client</button>
+            <button class="btn btn-success" onclick="exportToExcel()">📊 Exporter Excel</button>
+            <input type="text" class="search-box" placeholder="🔍 Rechercher un client..." onkeyup="filterTable()">
+        </div>
+        
+        <div class="table-container">
+            <table id="clientsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom Complet</th>
+                        <th>Téléphone</th>
+                        <th>Email</th>
+                        <th>Domaine</th>
+                        <th>Statut</th>
+                        <th>Date Ouverture</th>
+                        <th>Honoraires (€)</th>
+                        <th>Payé (€)</th>
+                        <th>Reste (€)</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="clientsTableBody">
+                    <!-- Les données seront ajoutées dynamiquement -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter/modifier un client -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Nouveau Client</h2>
+            <form id="clientForm">
+                <div class="form-group">
+                    <label for="nomComplet">Nom Complet *</label>
+                    <input type="text" id="nomComplet" required>
+                </div>
+                <div class="form-group">
+                    <label for="telephone">Téléphone</label>
+                    <input type="tel" id="telephone">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label for="domaine">Domaine Juridique *</label>
+                    <select id="domaine" required>
+                        <option value="">Sélectionner un domaine</option>
+                        <option value="Pénal">Droit Pénal</option>
+                        <option value="Civil">Droit Civil</option>
+                        <option value="Commercial">Droit Commercial</option>
+                        <option value="Famille">Droit de la Famille</option>
+                        <option value="Immobilier">Droit Immobilier</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="statut">Statut du Dossier *</label>
+                    <select id="statut" required>
+                        <option value="">Sélectionner un statut</option>
+                        <option value="Actif">Actif</option>
+                        <option value="En Attente">En Attente</option>
+                        <option value="Suspendu">Suspendu</option>
+                        <option value="Clôturé">Clôturé</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="honoraires">Honoraires (€) *</label>
+                    <input type="number" id="honoraires" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="paye">Montant Payé (€)</label>
+                    <input type="number" id="paye" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description du Dossier</label>
+                    <textarea id="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+                    <button type="button" class="btn" onclick="closeModal()" style="background: #6c757d; color: white; margin-left: 10px;">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let clients = [];
+        let editingClientId = null;
+        let nextId = 1;
+
+        // Données d'exemple
+        const exemplesClients = [
+            {
+                id: 1,
+                nomComplet: "Jean Dupont",
+                telephone: "01 23 45 67 89",
+                email: "jean.dupont@email.com",
+                domaine: "Pénal",
+                statut: "Actif",
+                dateOuverture: "2024-01-15",
+                honoraires: 2500.00,
+                paye: 1000.00,
+                description: "Affaire de vol aggravé - Représentation en correctionnelle"
+            },
+            {
+                id: 2,
+                nomComplet: "Marie Martin",
+                telephone: "01 98 76 54 32",
+                email: "marie.martin@email.com",
+                domaine: "Civil",
+                statut: "En Attente",
+                dateOuverture: "2024-02-03",
+                honoraires: 1800.00,
+                paye: 1800.00,
+                description: "Litige contractuel - Rupture de contrat commercial"
+            },
+            {
+                id: 3,
+                nomComplet: "Pierre Moreau",
+                telephone: "01 11 22 33 44",
+                email: "pierre.moreau@email.com",
+                domaine: "Famille",
+                statut: "Clôturé",
+                dateOuverture: "2023-12-10",
+                honoraires: 1200.00,
+                paye: 1200.00,
+                description: "Procédure de divorce - Garde d'enfants"
+            }
+        ];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            clients = [...exemplesClients];
+            nextId = Math.max(...clients.map(c => c.id)) + 1;
+            renderTable();
+            updateSummary();
+        });
+
+        function renderTable() {
+            const tbody = document.getElementById('clientsTableBody');
+            tbody.innerHTML = '';
+            
+            clients.forEach(client => {
+                const reste = client.honoraires - client.paye;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${client.id}</td>
+                    <td><strong>${client.nomComplet}</strong></td>
+                    <td>${client.telephone || '-'}</td>
+                    <td>${client.email || '-'}</td>
+                    <td><span class="domaine domaine-${client.domaine.toLowerCase()}">${client.domaine}</span></td>
+                    <td><span class="status status-${client.statut.toLowerCase().replace(' ', '-')}">${client.statut}</span></td>
+                    <td>${new Date(client.dateOuverture).toLocaleDateString('fr-FR')}</td>
+                    <td>${client.honoraires.toFixed(2)} €</td>
+                    <td>${client.paye.toFixed(2)} €</td>
+                    <td style="color: ${reste > 0 ? '#dc3545' : '#28a745'}"><strong>${reste.toFixed(2)} €</strong></td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${client.description || '-'}">${client.description || '-'}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editClient(${client.id})">✏️</button>
+                        <button class="delete-btn" onclick="deleteClient(${client.id})">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateSummary() {
+            const totalClients = clients.length;
+            const dossiersActifs = clients.filter(c => c.statut === 'Actif').length;
+            const chiffreAffaires = clients.reduce((sum, c) => sum + c.paye, 0);
+            const honorairesEnAttente = clients.reduce((sum, c) => sum + (c.honoraires - c.paye), 0);
+            
+            document.getElementById('totalClients').textContent = totalClients;
+            document.getElementById('dossiersActifs').textContent = dossiersActifs;
+            document.getElementById('chiffreAffaires').textContent = chiffreAffaires.toFixed(2) + ' €';
+            document.getElementById('honorairesEnAttente').textContent = honorairesEnAttente.toFixed(2) + ' €';
+        }
+
+        function openModal() {
+            document.getElementById('clientModal').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Nouveau Client';
+            document.getElementById('clientForm').reset();
+            editingClientId = null;
+        }
+
+        function closeModal() {
+            document.getElementById('clientModal').style.display = 'none';
+        }
+
+        function editClient(id) {
+            const client = clients.find(c => c.id === id);
+            if (client) {
+                editingClientId = id;
+                document.getElementById('modalTitle').textContent = 'Modifier Client';
+                document.getElementById('nomComplet').value = client.nomComplet;
+                document.getElementById('telephone').value = client.telephone || '';
+                document.getElementById('email').value = client.email || '';
+                document.getElementById('domaine').value = client.domaine;
+                document.getElementById('statut').value = client.statut;
+                document.getElementById('honoraires').value = client.honoraires;
+                document.getElementById('paye').value = client.paye;
+                document.getElementById('description').value = client.description || '';
+                document.getElementById('clientModal').style.display = 'block';
+            }
+        }
+
+        function deleteClient(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
+                clients = clients.filter(c => c.id !== id);
+                renderTable();
+                updateSummary();
+            }
+        }
+
+        document.getElementById('clientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nomComplet: document.getElementById('nomComplet').value,
+                telephone: document.getElementById('telephone').value,
+                email: document.getElementById('email').value,
+                domaine: document.getElementById('domaine').value,
+                statut: document.getElementById('statut').value,
+                honoraires: parseFloat(document.getElementById('honoraires').value),
+                paye: parseFloat(document.getElementById('paye').value) || 0,
+                description: document.getElementById('description').value
+            };
+
+            if (editingClientId) {
+                const index = clients.findIndex(c => c.id === editingClientId);
+                clients[index] = { ...clients[index], ...formData };
+            } else {
+                clients.push({
+                    id: nextId++,
+                    ...formData,
+                    dateOuverture: new Date().toISOString().split('T')[0]
+                });
+            }
+
+            renderTable();
+            updateSummary();
+            closeModal();
+        });
+
+        function filterTable() {
+            const searchTerm = document.querySelector('.search-box').value.toLowerCase();
+            const rows = document.querySelectorAll('#clientsTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function exportToExcel() {
+            const headers = ['ID', 'Nom Complet', 'Téléphone', 'Email', 'Domaine', 'Statut', 'Date Ouverture', 'Honoraires (€)', 'Payé (€)', 'Reste (€)', 'Description'];
+            
+            let csvContent = headers.join(';') + '\n';
+            
+            clients.forEach(client => {
+                const reste = client.honoraires - client.paye;
+                const row = [
+                    client.id,
+                    client.nomComplet,
+                    client.telephone || '',
+                    client.email || '',
+                    client.domaine,
+                    client.statut,
+                    new Date(client.dateOuverture).toLocaleDateString('fr-FR'),
+                    client.honoraires.toFixed(2),
+                    client.paye.toFixed(2),
+                    reste.toFixed(2),
+                    client.description || ''
+                ];
+                csvContent += row.join(';') + '\n';
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'clients_cabinet_avocat_' + new Date().toISOString().split('T')[0] + '.csv';
+            link.click();
+        }
+
+        // Fermer le modal en cliquant à l'extérieur
+        window.onclick = function(event) {
+            const modal = document.getElementById('clientModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
